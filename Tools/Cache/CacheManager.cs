@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Tools.Synchronisation; 
 
 namespace Tools.Cache
 {
@@ -13,14 +14,16 @@ namespace Tools.Cache
     {
         private readonly List<T> _objectList = new List<T>();
         private readonly Queue<int> _freedObjects = new Queue<int>();
-        private readonly SpinLock _lock = new SpinLock();
+        private readonly ILock _lock;
 
-        private CacheManager()
-        {}
-
-        public static ICache<T> Create()
+        private CacheManager(LockType lockType)
         {
-            return new CacheManager<T>();
+            _lock = LockFactory.Create(lockType);
+        }
+
+        public static ICache<T> Create(LockType lockType)
+        {
+            return new CacheManager<T>(lockType);
         }
 
         public T Get(Int32 index)

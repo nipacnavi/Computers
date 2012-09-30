@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using SpinLock = Tools.SpinLock;
+using SpinLock = Tools.Synchronisation.SpinLock;
 
 namespace Tools_TestProject
 {
@@ -110,7 +110,7 @@ namespace Tools_TestProject
             SpinLockTest1Loop(TestWithUsing);
         }
 
-        public void SpinLockTest1Loop(Action<SpinLock> action)
+        internal void SpinLockTest1Loop(Action<SpinLock> action)
         {
             const int looNb = 1000000;
 

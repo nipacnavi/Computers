@@ -34,4 +34,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("Tools_TestProject, PublicKey=2ba1bdbc-eb5f-44b4-910a-eac637455c5a")]
+[assembly: InternalsVisibleTo("Tools_TestProject")]

@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using Tools.Cache;
+using Tools.Synchronisation;
 
 namespace Tools_TestProject
 {
@@ -48,7 +49,7 @@ namespace Tools_TestProject
         [TestMethod]
         public void CacheTest1()
         {
-            var cache = CacheManager<object>.Create();
+            var cache = CacheManager<object>.Create(LockType.NoLock);
 
             var o = new object();
 
@@ -60,7 +61,7 @@ namespace Tools_TestProject
         [TestMethod]
         public void CacheTest2()
         {
-            var cache = CacheManager<object>.Create();
+            var cache = CacheManager<object>.Create(LockType.NoLock);
 
             var o = new object();
 
@@ -74,7 +75,7 @@ namespace Tools_TestProject
         [TestMethod]
         public void CacheTest3()
         {
-            var cache = CacheManager<object>.Create();
+            var cache = CacheManager<object>.Create(LockType.NoLock);
 
             var o = new object();
 
