@@ -22,6 +22,12 @@ namespace Tools.Synchronisation
             Monitor.Exit(_locker);
         }
 
+        public ILock EnterAndReturnLock()
+        {
+            Enter();
+            return this;
+        }
+
         #endregion
 
         #region IDisposable Members

@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Tools.Synchronisation;
 using SpinLock = Tools.Synchronisation.SpinLock;
 
 namespace Tools_TestProject
@@ -48,112 +49,42 @@ namespace Tools_TestProject
         #endregion
 
 
-        /// <summary>
-        ///A test for SpinLock
-        ///</summary>
-        [TestMethod]
-        public void SpinLockBenchmark()
-        {
-            var count = 0;
-
-            Action<Action, Action, Action> loop = (enter, action, leave) =>
-                                                      {
-                                                          var counter = 1000000;
-                                                          while (counter-- > 0)
-                                                          {
-                                                              enter();
-                                                              action();
-                                                              leave();
-                                                          }
-                                                      };
-
-            Func<Action, Action, bool> wait = (enter, leave) =>
-                                                  {
-                                                      var run = true;
-                                                      while (run)
-                                                      {
-                                                          enter();
-                                                          var copy = count;
-                                                          Thread.Sleep(0);
-                                                          if (copy != count)
-                                                              // count was changed in a lock -> impossible!
-                                                              return false;
-                                                          if (count <= 0)
-                                                              run = false;
-                                                          leave();
-                                                      }
-                                                      return true;
-                                                  };
-
-            var mySpinLock = new SpinLock();
-
-            count = 1000000;
-
-            ThreadPool.QueueUserWorkItem(o => loop(mySpinLock.Enter, () => count--, mySpinLock.Leave));
-
-            wait(mySpinLock.Enter, mySpinLock.Leave);
-
-            Assert.IsTrue(count == 0);
-        }
-
         private static Int32 _spinLockTest1Counter;
 
         [TestMethod]
-        public void SpinLockTest1()
-        {
-            SpinLockTest1Loop(Test);
-        }
-
-        [TestMethod]
-        public void SpinLockTest2()
-        {
-            SpinLockTest1Loop(TestWithUsing);
-        }
-
-        internal void SpinLockTest1Loop(Action<SpinLock> action)
+        public void LockTestLoop()
         {
             const int looNb = 1000000;
 
             _spinLockTest1Counter = 0;
 
             var mySpinLock = new SpinLock();
+            //var mySpinLock = new NoLock(); // fails with NoLock
 
             for (var i = 0; i < looNb; i++)
-                TestWithUsing(mySpinLock);
+                InnerTest(mySpinLock);
 
             Thread.Sleep(1000);
 
             Assert.IsTrue(_spinLockTest1Counter == looNb);
         }
 
-        private static void Test(SpinLock mySpinLock)
+        private static void InnerTest(ILock mySpinLock)
         {
-            mySpinLock.Enter();
+            ThreadPool.QueueUserWorkItem(
+                o =>
+                    {
+                        int copy1, copy2;
+                        using (mySpinLock.EnterAndReturnLock())
+                        {
+                            copy1 = _spinLockTest1Counter;
+                            _spinLockTest1Counter++;
+                            copy2 = _spinLockTest1Counter;
 
-            InnerTest(mySpinLock);
-
-            mySpinLock.Leave();
-        }
-
-        private static void TestWithUsing(SpinLock mySpinLock)
-        {
-            mySpinLock.Enter();
-            using (mySpinLock)
-                InnerTest(mySpinLock);
-        }
-
-        private static void InnerTest(SpinLock mySpinLock)
-        {
-            var copy = _spinLockTest1Counter;
-
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                mySpinLock.Enter();
-                _spinLockTest1Counter++;
-                mySpinLock.Leave();
-            });
-
-            Assert.IsTrue(_spinLockTest1Counter == copy);
+                        }
+                        Assert.IsTrue(copy1 + 1 == copy2);
+                    }
+            );
         }
     }
 }

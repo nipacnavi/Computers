@@ -26,6 +26,12 @@ namespace Tools.Synchronisation
             Thread.VolatileWrite(ref _resourceInUse, 0);
         }
 
+        public ILock EnterAndReturnLock()
+        {
+            Enter();
+            return this;
+        }
+
         public void Dispose()
         {
             Leave();

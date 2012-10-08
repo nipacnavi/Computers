@@ -7,7 +7,7 @@ using Tools.Cache;
 
 namespace Tools.DAG
 {
-    class DAGStorage<T> : IEnumerable<T>
+    class DagStorage<T> : IEnumerable<T>
     {
         class DataContainer
         {
@@ -25,7 +25,7 @@ namespace Tools.DAG
         private readonly ILock _lock;
         private int _storageIndex;
 
-        private DAGStorage(LockType lockType)
+        private DagStorage(LockType lockType)
         {
             _lock = LockFactory.Create(lockType);
         }
@@ -33,14 +33,14 @@ namespace Tools.DAG
         public int AddData(T data)
         {
             int index;
-            using (_lock)
+            using (_lock.EnterAndReturnLock())
                 index = _cache.Cache(new DataContainer(data, _storageIndex++));
             return index;
         }
 
         public void RemoveData(int dataIndex)
         {
-            using (_lock)
+            using (_lock.EnterAndReturnLock())
             {
                 _cache.Free(dataIndex);
                 _graph.RemoveVertex(dataIndex);
@@ -49,13 +49,13 @@ namespace Tools.DAG
 
         public void LinkData(int dataIndex1, int dataIndex2)
         {
-            using (_lock)
+            using (_lock.EnterAndReturnLock())
                 _graph.AddEdge(dataIndex1, dataIndex2);
         }
 
         public void UnlinkData(int dataIndex1, int dataIndex2)
         {
-            using (_lock)
+            using (_lock.EnterAndReturnLock())
                 _graph.RemoveEdge(dataIndex1, dataIndex2);
         }
 
@@ -79,10 +79,7 @@ namespace Tools.DAG
             using (_lock)
                 topologicalSorting = _graph.TopologicalSorting(null);
 
-            foreach (var i in topologicalSorting)
-            {
-                yield return _cache.Get(i).Data;
-            }
+            return topologicalSorting.Select(i => _cache.Get(i).Data).GetEnumerator();
         }
 
         #endregion

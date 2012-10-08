@@ -24,7 +24,7 @@ namespace Tools.DAG
             return result;
         }
 
-        private static IEnumerable<int> GetTopologicalSorting(this Graph graph, Action<int> addToCollectionToExplore, Func<int> nextValue, Func<bool> isEmpty)
+        private static IEnumerable<int> GetTopologicalSorting(this Graph graph, Action<int> addToListOfObjectsToExplore, Func<int> nextValue, Func<bool> isEmpty)
         {
             var result = new List<int>();
             while(!isEmpty())
@@ -35,7 +35,7 @@ namespace Tools.DAG
                 {
                     graph.RemoveEdge(origin, target);
                     if (graph.GetNumberOfEdgesGointTo(target) == 0)
-                        addToCollectionToExplore(target);
+                        addToListOfObjectsToExplore(target);
                 }                
             }
             return result;

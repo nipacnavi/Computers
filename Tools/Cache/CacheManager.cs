@@ -28,8 +28,7 @@ namespace Tools.Cache
 
         public T Get(Int32 index)
         {
-            _lock.Enter();
-            using(_lock)
+            using(_lock.EnterAndReturnLock())
             {
                 return _objectList[index];
             }
@@ -37,8 +36,7 @@ namespace Tools.Cache
 
         public void Free(Int32 index)
         {
-            _lock.Enter();
-            using (_lock)
+            using (_lock.EnterAndReturnLock())
             {
                 _objectList[index] = default(T);
                 _freedObjects.Enqueue(index);
@@ -50,8 +48,7 @@ namespace Tools.Cache
             if(null == newObject)
                 throw new Exception("Cannot cache null objects");
             int newIndex;
-            _lock.Enter();
-            using (_lock)
+            using (_lock.EnterAndReturnLock())
             {
                 newIndex = _freedObjects.Count == 0 ? _objectList.Count : _freedObjects.Dequeue();
                 if (newIndex == _objectList.Count)
@@ -63,8 +60,7 @@ namespace Tools.Cache
 
         public void EmptyCache()
         {
-            _lock.Enter();
-            using (_lock)
+            using (_lock.EnterAndReturnLock())
             {
                 _objectList.Clear();
                 _freedObjects.Clear();

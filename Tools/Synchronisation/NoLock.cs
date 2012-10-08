@@ -17,6 +17,11 @@ namespace Tools.Synchronisation
         {
         }
 
+        public ILock EnterAndReturnLock()
+        {
+            return this;
+        }
+
         #endregion
 
         #region IDisposable Members
