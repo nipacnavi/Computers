@@ -51,6 +51,13 @@ namespace Tools_TestProject
         {
             var cache = CacheManager<object>.Create(LockType.NoLock);
 
+            GetMethodReturnsCachedObject(cache);
+
+            GetMethodReturnsCachedObject(cache.CreateMonotonousCache());
+        }
+
+        private static void GetMethodReturnsCachedObject(ICache<object> cache)
+        {
             var o = new object();
 
             var i = cache.Cache(o);
@@ -63,6 +70,13 @@ namespace Tools_TestProject
         {
             var cache = CacheManager<object>.Create(LockType.NoLock);
 
+            GetMethodReturnsNullAfterFeedObject(cache);
+
+            GetMethodReturnsNullAfterFeedObject(cache.CreateMonotonousCache());
+        }
+
+        private static void GetMethodReturnsNullAfterFeedObject(ICache<object> cache)
+        {
             var o = new object();
 
             var i = cache.Cache(o);
@@ -73,7 +87,7 @@ namespace Tools_TestProject
         }
 
         [TestMethod]
-        public void CacheTest3()
+        public void FreedIndexIsReused()
         {
             var cache = CacheManager<object>.Create(LockType.NoLock);
 
@@ -84,6 +98,22 @@ namespace Tools_TestProject
             cache.Free(i1);
             var i3 = cache.Cache(o);
             Assert.IsTrue(i3 == i1);
+        }
+
+        [TestMethod]
+        public void IndicesAreIncreasing()
+        {
+            var cache = CacheManager<object>.Create(LockType.NoLock);
+
+            var monotoneCache = cache.CreateMonotonousCache();
+
+            var o = new object();
+
+            var i1 = cache.Cache(o);
+            var m1 = monotoneCache.Cache(o);
+            cache.Free(i1);
+            var m2 = monotoneCache.Cache(o);
+            Assert.IsTrue(m2 > m1);
         }
     }
 }

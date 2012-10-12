@@ -10,7 +10,7 @@ namespace Tools.Cache
     /// Note2: the Cache method throws an exception when called with a null object 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class CacheManager<T> : ICache<T>
+    public class CacheManager<T> : ICacheManager<T>
     {
         private readonly List<T> _objectList = new List<T>();
         private readonly Queue<int> _freedObjects = new Queue<int>();
@@ -21,7 +21,7 @@ namespace Tools.Cache
             _lock = LockFactory.Create(lockType);
         }
 
-        public static ICache<T> Create(LockType lockType)
+        public static ICacheManager<T> Create(LockType lockType)
         {
             return new CacheManager<T>(lockType);
         }
@@ -45,20 +45,43 @@ namespace Tools.Cache
 
         public int Cache(T newObject)
         {
-            if(null == newObject)
+            return Cache(newObject, -1);
+        }
+
+        /// <summary>
+        /// Cache a new objects with an index that is strictly greater than minIndex
+        /// </summary>
+        /// <param name="newObject">the object to be cached</param>
+        /// <param name="minIndex">minimum index that can be returned</param>
+        /// <returns>the cached object's index</returns>
+        public int Cache(T newObject, int minIndex)
+        {
+            if (null == newObject)
                 throw new Exception("Cannot cache null objects");
             int newIndex;
             using (_lock.EnterAndReturnLock())
             {
-                newIndex = _freedObjects.Count == 0 ? _objectList.Count : _freedObjects.Dequeue();
-                if (newIndex == _objectList.Count)
+                if (_freedObjects.Count != 0 && _freedObjects.Peek() > minIndex)
+                {
+                    newIndex = _freedObjects.Dequeue();
+                }
+                else
+                {
+                    newIndex = _objectList.Count;
                     _objectList.Add(default(T));
+                }
+
                 _objectList[newIndex] = newObject;
             }
             return newIndex;
         }
 
-        public void EmptyCache()
+        public ICache<T> CreateMonotonousCache()
+        {
+            return new MonotonousCacheView<T>(this);
+        }
+
+        public void Clear()
         {
             using (_lock.EnterAndReturnLock())
             {

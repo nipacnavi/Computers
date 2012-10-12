@@ -7,6 +7,5 @@ namespace Tools.Cache
         T Get(Int32 index);
         void Free(Int32 index);
         int Cache(T newObject);
-        void EmptyCache();
     }
 }

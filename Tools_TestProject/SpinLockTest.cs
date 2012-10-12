@@ -64,8 +64,14 @@ namespace Tools_TestProject
             for (var i = 0; i < looNb; i++)
                 InnerTest(mySpinLock);
 
-            Thread.Sleep(1000);
-
+            int j;
+            for (j = 0; j < 10000; j++ )
+            {
+                if (_spinLockTest1Counter == looNb)
+                    break;
+                Thread.Sleep(1);
+            }
+            Console.WriteLine("Main thread waited {0} ms", j.ToString());
             Assert.IsTrue(_spinLockTest1Counter == looNb);
         }
 

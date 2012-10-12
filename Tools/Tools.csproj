@@ -42,7 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cache\CacheManager.cs" />
+    <Compile Include="Cache\ICacheManager.cs" />
     <Compile Include="Cache\ICache.cs" />
+    <Compile Include="Cache\MonotonousCacheView.cs" />
     <Compile Include="DAG\DAGStorage.cs" />
     <Compile Include="DAG\Graph.cs" />
     <Compile Include="DAG\GraphEdgesExtensions.cs" />
