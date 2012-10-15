@@ -4,8 +4,8 @@ namespace Tools.Cache
 {
     public interface ICache<T>
     {
-        T Get(Int32 index);
-        void Free(Int32 index);
-        int Cache(T newObject);
+        T Get(ICacheKey index);
+        void Free(ICacheKey index);
+        ICacheKey Cache(T newObject);
     }
 }

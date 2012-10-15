@@ -20,20 +20,21 @@ namespace Tools.Cache
 
         }
 
-        public T Get(int index)
+        public T Get(ICacheKey key)
         {
-            return _cache.Get(index);
+            return _cache.Get(key);
         }
 
-        public void Free(int index)
+        public void Free(ICacheKey key)
         {
-            _cache.Free(index);
+            _cache.Free(key);
         }
 
-        public int Cache(T newObject)
+        public ICacheKey Cache(T newObject)
         {
-            _minIndex = _cache.Cache(newObject, _minIndex);
-            return _minIndex;
+            var key = _cache.Cache(newObject, _minIndex);
+            _minIndex = key.Index;
+            return key;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Tools.Cache
     /// <typeparam name="T"></typeparam>
     public class CacheManager<T> : ICacheManager<T>
     {
-        private readonly List<T> _objectList = new List<T>();
+        private readonly List<Tuple<T, int>> _objectList = new List<Tuple<T, int>>();
         private readonly Queue<int> _freedObjects = new Queue<int>();
         private readonly ILock _lock;
 
@@ -26,24 +26,30 @@ namespace Tools.Cache
             return new CacheManager<T>(lockType);
         }
 
-        public T Get(Int32 index)
+        public T Get(ICacheKey key)
         {
             using(_lock.EnterAndReturnLock())
             {
-                return _objectList[index];
+                var cachedData = _objectList[key.Index];
+                if (cachedData.Item2 > key.Version)
+                    throw new Exception("in CacheManager.Get: too old version number");
+                return _objectList[key.Index].Item1;
             }
         }
 
-        public void Free(Int32 index)
+        public void Free(ICacheKey key)
         {
             using (_lock.EnterAndReturnLock())
             {
-                _objectList[index] = default(T);
-                _freedObjects.Enqueue(index);
-            }            
+                var cachedData = _objectList[key.Index];
+                if (cachedData.Item2 > key.Version)
+                    throw new Exception("in CacheManager.Free: too old version number");
+                _objectList[key.Index] = new Tuple<T, int>(default(T), cachedData.Item2 + 1);
+                _freedObjects.Enqueue(key.Index);
+            }
         }
 
-        public int Cache(T newObject)
+        public ICacheKey Cache(T newObject)
         {
             return Cache(newObject, -1);
         }
@@ -54,26 +60,26 @@ namespace Tools.Cache
         /// <param name="newObject">the object to be cached</param>
         /// <param name="minIndex">minimum index that can be returned</param>
         /// <returns>the cached object's index</returns>
-        public int Cache(T newObject, int minIndex)
+        public ICacheKey Cache(T newObject, int minIndex)
         {
-            if (null == newObject)
-                throw new Exception("Cannot cache null objects");
             int newIndex;
+            int newVersion;
             using (_lock.EnterAndReturnLock())
             {
                 if (_freedObjects.Count != 0 && _freedObjects.Peek() > minIndex)
                 {
                     newIndex = _freedObjects.Dequeue();
+                    newVersion = _objectList[newIndex].Item2;
                 }
                 else
                 {
                     newIndex = _objectList.Count;
-                    _objectList.Add(default(T));
+                    newVersion = 0;
                 }
 
-                _objectList[newIndex] = newObject;
+                _objectList[newIndex] = new Tuple<T, int>(newObject, newVersion);
             }
-            return newIndex;
+            return new CacheKey(newIndex, newVersion);
         }
 
         public ICache<T> CreateMonotonousCache()

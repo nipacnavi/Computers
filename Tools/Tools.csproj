@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cache\CacheManager.cs" />
+    <Compile Include="Cache\CacheKey.cs" />
+    <Compile Include="Cache\ICacheKey.cs" />
     <Compile Include="Cache\ICacheManager.cs" />
     <Compile Include="Cache\ICache.cs" />
     <Compile Include="Cache\MonotonousCacheView.cs" />
